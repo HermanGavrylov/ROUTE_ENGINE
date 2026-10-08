@@ -129,6 +129,10 @@ namespace Travelling
 
         public static Traveler LoadFromFile(string filePath)
         {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"File doesn’t exist");
+            }
 
             string json = File.ReadAllText(filePath);
             var data = JsonSerializer.Deserialize<TravelerData>(json);
