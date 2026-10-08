@@ -126,5 +126,38 @@ namespace Travelling
             string json = JsonSerializer.Serialize(data, options);
             File.WriteAllText(filePath, json);
         }
+
+        public static Traveler LoadFromFile(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"The file '{filePath}' does not exist.");
+            }
+
+            string json = File.ReadAllText(filePath);
+            var data = JsonSerializer.Deserialize<TravelerData>(json);
+
+            if (data == null)
+            {
+                throw new InvalidOperationException("Failed to deserialize traveler data.");
+            }
+
+            Traveler traveler = new Traveler(data.name);
+            traveler.SetLocation(data.currentLocation);
+
+            foreach (var city in data.route)
+            {
+                traveler.AddCity(city);
+            }
+
+            return traveler;
+        }
+    }
+
+    public class TravelerData
+    {
+        public string name { get; set; }
+        public string currentLocation { get; set; }
+        public string[] route { get; set; }
     }
 }
