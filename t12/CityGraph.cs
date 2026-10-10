@@ -111,5 +111,32 @@ namespace Travelling
             }
             return path;
         }
+
+        public int GetPathDistance(List<string> path)
+        {
+            int totalDistance = 0;
+            for (int i = 0; i < path.Count - 1; i++)
+            {
+                string from = path[i];
+                string to = path[i + 1];
+
+                if (!adjacencyList.TryGetValue(from, out List<Edge> edges))
+                {
+                    return -1;
+                }
+
+                var edge = edges.Find(e => e.To == to);
+                
+                if (edge != null)
+                {
+                    totalDistance += edge.Distance;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+            return totalDistance;
+        }
     }
 }

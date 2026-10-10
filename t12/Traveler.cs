@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Collections.Generic;
 
 namespace Travelling
 {
@@ -161,6 +162,50 @@ namespace Travelling
             }
 
             return traveler;
+        }
+
+        public bool PlanRouteTo(string destination, CityGraph map)
+        {
+            string start;
+
+            if (!string.IsNullOrWhiteSpace(location))
+            {
+                start = GetLocation();
+            }
+            else if (GetStopCount() > 0)
+            {
+                start = GetRoute().Split(" -> ")[0];
+            }
+            else
+            {
+                Console.WriteLine("No route!");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(destination))
+            {
+                Console.WriteLine("No route!");
+                return false;
+            }
+            else
+            {
+                destination = CapitalizeWords(destination);
+            }
+
+            List<string> path = map.FindShortestPath(start, destination);
+
+            if (path.Count == 0)
+            {
+                Console.WriteLine("No route!");
+                return false;
+            }
+
+            ClearRoute();
+            foreach (var city in path)
+            {
+                AddCity(city);
+            }
+            return true;
         }
     }
 
