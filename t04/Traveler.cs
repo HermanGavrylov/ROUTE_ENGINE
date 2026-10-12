@@ -1,14 +1,15 @@
+using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Text.Json;
 
 namespace Travelling
 {
-    public class Traveler
+    public class Traveler : ICloneable
     {
         protected string name;
         protected string location;
-        protected RouteManager<string> route = new RouteManager<string>();
+        protected List<string> route = new List<string>();
 
         private string CapitalizeWords(string input)
         {
@@ -48,12 +49,12 @@ namespace Travelling
             {
                 throw new ArgumentException("City name cannot be null or empty.", nameof(city));
             }
-            route.AddItem(CapitalizeWords(city));
+            route.Add(CapitalizeWords(city));
         }
 
         public string GetRoute()
         {
-            return route.ToString();
+            return string.Join(" -> ", route);
         }
 
         public override string ToString()
@@ -69,6 +70,43 @@ namespace Travelling
         public int GetStopCount()
         {
             return route.Count;
+        }
+
+        public bool HasCity(string city)
+        {
+            city = CapitalizeWords(city);
+            return route.Contains(city);
+        }
+
+        public void SortRoute()
+        {
+            route.Sort();
+        }
+
+        public bool RemoveCity(string city)
+        {
+            city = CapitalizeWords(city);
+            return route.Remove(city);
+        }
+
+        public string GetNextStop()
+        {
+            if (route.Count > 0)
+            {
+                return route[0];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public string this[int index]
+        {
+            get
+            {
+                    return route[index];
+            }
         }
 
         public override bool Equals(object obj)
@@ -103,6 +141,14 @@ namespace Travelling
             return !(a == b);
         }
 
+        public virtual object Clone()
+        {
+            Traveler copy = new Traveler(this.name);
+            copy.location = this.location;
+            copy.route = new List<string>(this.route);
+            return copy;
+        }
+
         public virtual string GetTravelSummary()
         {
             return $"Traveler: {name} | Location: {location} | Route: {GetRoute()}";
@@ -110,20 +156,15 @@ namespace Travelling
 
         public void SaveToFile(string filePath)
         {
-            string[] cities = new string[0];
+            List<string> cities = new List<string>();
+            route.ForEach(city => cities.Add(JsonSerializer.Serialize(city)));
 
-            if (GetStopCount() != 0)
-            {
-                cities = GetRoute().Split(" -> ");
-            }
-            var data = new
-            {
-                name = name,
-                currentLocation = location,
-                route = cities
-            };
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            string json = JsonSerializer.Serialize(data, options);
+            string json =
+                "{\n" +
+                $"  \"name\": {JsonSerializer.Serialize(name)},\n" +
+                $"  \"currentLocation\": {JsonSerializer.Serialize(location)},\n" +
+                $"  \"route\": [{string.Join(", ", cities)}]\n" +
+                "}";
             File.WriteAllText(filePath, json);
         }
     }
